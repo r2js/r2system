@@ -1,6 +1,6 @@
 {
   "name": "r2system",
-  "description": "Base mongoose models for r2js",
+  "description": "Base system models for r2js",
   "version": "1.0.0",
   "author": "Selçuk Fatih Sevinç",
   "license": "MIT",

@@ -1,7 +1,7 @@
 <h1 align="center">r2system</h1>
 
 <div align="center">
-  <strong>Base mongoose models for r2js</strong>
+  <strong>Base system models for r2js</strong>
 </div>
 
 <br />
