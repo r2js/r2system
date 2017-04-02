@@ -39,19 +39,25 @@ describe('r2system', () => {
 
     it('should not create user with same email', (done) => {
       const test3 = { email: 'test3@abc.com', passwd: '1234' };
-      Users.newUser(test3).then((user) => {
-        expect(user).to.not.equal(undefined);
-        expect(user.email).to.equal('test3@abc.com');
-        expect(user.passwd).to.equal(undefined);
-        expect(user.hash).to.not.equal(undefined);
-        expect(user.salt).to.not.equal(undefined);
+      Users.newUser(test3)
+        .then((user) => {
+          try {
+            expect(user).to.not.equal(undefined);
+            expect(user.email).to.equal('test3@abc.com');
+            expect(user.passwd).to.equal(undefined);
+            expect(user.hash).to.not.equal(undefined);
+            expect(user.salt).to.not.equal(undefined);
+          } catch (e) {
+            console.log(e);
+          }
 
-        Users.newUser(test3).then(done).catch((err) => {
-          const message3 = err.message.includes('E11000 duplicate key error collection');
-          expect(message3).to.equal(true);
-          done();
-        });
-      });
+          Users.newUser(test3).then(done).catch((err) => {
+            const message3 = err.message.includes('E11000');
+            expect(message3).to.equal(true);
+            done();
+          });
+        })
+        .catch(done);
     });
   });
 });
