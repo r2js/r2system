@@ -19,7 +19,9 @@ module.exports = (app) => {
     passwdChanged: { type: Date },
     verifyToken: { type: String },
     isVerified: { type: String, enum: ['y', 'n'], default: 'n' },
-    isEnabled: { type: String, enum: ['y', 'n'], default: 'y' },
+    isEnabled: { type: String, enum: ['y', 'n'], default: 'n' },
+    resetToken: { type: String },
+    resetExpires: { type: Date },
   }, {
     timestamps: true,
   });
