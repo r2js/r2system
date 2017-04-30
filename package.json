@@ -1,7 +1,7 @@
 {
   "name": "r2system",
   "description": "Base system models for r2js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Selçuk Fatih Sevinç",
   "license": "MIT",
   "engines": {
@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "debug": "^2.6.3",
-    "uuid": "^3.0.1"
+    "underscore": "^1.8.3",
+    "uuid": "^3.0.1",
+    "validatorjs": "^3.12.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
@@ -19,7 +21,7 @@
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
     "mocha": "^3.2.0",
-    "r2base": "^1.0.0",
+    "r2base": "^1.0.6",
     "r2mongoose": "^1.0.0",
     "supertest": "^3.0.0"
   },

@@ -1,6 +1,8 @@
 const users = require('./model/users');
+const validate = require('./lib/validate');
 
 module.exports = function System(app) {
   const Users = users(app);
-  return { Users };
+  const Validate = validate(app);
+  return { Users, Validate };
 };

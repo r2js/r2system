@@ -10,9 +10,11 @@ const app = r2base({ baseDir: __dirname });
 app.start()
   .serve(r2mongoose, { database: 'r2test' })
   .serve(r2system)
+  .load('model')
   .into(app);
 
 const { Users } = app.service('System');
+const Test = app.service('model/test');
 
 describe('r2system', () => {
   describe('users', () => {
@@ -54,6 +56,56 @@ describe('r2system', () => {
           });
         })
         .catch(done);
+    });
+  });
+
+  describe('validate', () => {
+    it('should validate schema', (done) => {
+      const test = new Test({ name: '', email: 'test', slug: '!123*=' });
+      test.save()
+        .then(done)
+        .catch((err) => {
+          try {
+            expect(err.errors.name.message).to.equal('The name field is required.');
+            expect(err.errors.email.message).to.equal('The email format is invalid.');
+            expect(err.errors.slug.message).to.equal('The slug field may only contain alpha-numeric characters, as well as dashes and underscores.');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+    });
+
+    it('should validate schema, en', (done) => {
+      const test = new Test({ name: '', email: 'test', slug: '!123*=', i18n: 'en' });
+      test.save()
+        .then(done)
+        .catch((err) => {
+          try {
+            expect(err.errors.name.message).to.equal('The Name field is required.');
+            expect(err.errors.email.message).to.equal('The E-mail format is invalid.');
+            expect(err.errors.slug.message).to.equal('The Slug field may only contain alpha-numeric characters, as well as dashes and underscores.');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+    });
+
+    it('should validate schema, tr', (done) => {
+      const test = new Test({ name: '', email: 'test', slug: '!123*=', i18n: 'tr' });
+      test.save()
+        .then(done)
+        .catch((err) => {
+          try {
+            expect(err.errors.name.message).to.equal('İsim alanı gerekli.');
+            expect(err.errors.email.message).to.equal('E-posta formatı geçersiz.');
+            expect(err.errors.slug.message).to.equal('Slag alanı sadece alfa-nümerik, tire ve alt çizgi karakterlerden oluşabilir.');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
     });
   });
 });
