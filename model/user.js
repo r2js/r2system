@@ -8,7 +8,7 @@ module.exports = (app) => {
     return log('service [Mongoose] not found!');
   }
 
-  const { Model, Schema } = mongoose;
+  const { Schema } = mongoose;
   const schema = Schema({
     email: { type: String, required: true, unique: true },
     passwd: { type: String },
@@ -28,12 +28,10 @@ module.exports = (app) => {
 
   schema.index({ uname: 1 }, { unique: true, sparse: true });
 
-  class Users extends Model {
-    static newUser(data) {
-      const User = new this(data);
-      return User.save();
-    }
-  }
+  schema.statics.newUser = function (data) { // eslint-disable-line
+    const User = new this(data);
+    return User.save();
+  };
 
   schema.pre('save', function preSave(next) {
     this.email = this.email.toLowerCase();
@@ -48,5 +46,5 @@ module.exports = (app) => {
     next();
   });
 
-  return mongoose.model(Users, schema, 'users');
+  return mongoose.model('user', schema);
 };
