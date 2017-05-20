@@ -18,12 +18,13 @@ module.exports = (app) => {
     lastLogin: { type: Date },
     passwdChanged: { type: Date },
     verifyToken: { type: String },
-    isVerified: { type: String, enum: ['y', 'n'], default: 'n' },
-    isEnabled: { type: String, enum: ['y', 'n'], default: 'n' },
+    isVerified: { type: Boolean, default: false },
+    isEnabled: { type: Boolean, default: false },
     resetToken: { type: String },
     resetExpires: { type: Date },
   }, {
     timestamps: true,
+    discriminatorKey: 'user',
   });
 
   schema.index({ uname: 1 }, { unique: true, sparse: true });
