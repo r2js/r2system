@@ -27,7 +27,13 @@
   "main": "index.js",
   "readmeFilename": "README.md",
   "keywords": [
-    "r2js"
+    "r2js",
+    "r2system",
+    "r2base",
+    "r2mongoose",
+    "mongoose",
+    "user",
+    "validation"
   ],
   "scripts": {
     "test": "mocha test"
