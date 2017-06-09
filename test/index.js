@@ -16,26 +16,28 @@ app.start()
 const { Users } = app.service('System');
 const Test = app.service('model/test');
 
+const checkUserAttr = (user) => {
+  const { salt, verifyToken } = user;
+  expect(salt).to.not.equal(undefined);
+  expect(verifyToken).to.not.equal(undefined);
+};
+
 describe('r2system', () => {
   describe('users', () => {
     it('should create user', () => {
       const User = new Users({ email: 'test1@abc.com', passwd: '1234' });
       return User.save().then((user) => {
-        expect(user).to.not.equal(undefined);
         expect(user.email).to.equal('test1@abc.com');
-        expect(user.passwd).to.equal(undefined);
-        expect(user.hash).to.not.equal(undefined);
-        expect(user.salt).to.not.equal(undefined);
+        expect(user.passwd).to.not.equal('1234');
+        checkUserAttr(user);
       });
     });
 
     it('should create user with newUser function', () => (
       Users.newUser({ email: 'test2@abc.com', passwd: '1234' }).then((user) => {
-        expect(user).to.not.equal(undefined);
         expect(user.email).to.equal('test2@abc.com');
-        expect(user.passwd).to.equal(undefined);
-        expect(user.hash).to.not.equal(undefined);
-        expect(user.salt).to.not.equal(undefined);
+        expect(user.passwd).to.not.equal('1234');
+        checkUserAttr(user);
       })
     ));
 
@@ -43,11 +45,9 @@ describe('r2system', () => {
       const testUser = { email: 'test3@abc.com', passwd: '1234' };
       Users.newUser(testUser)
         .then((user) => {
-          expect(user).to.not.equal(undefined);
           expect(user.email).to.equal('test3@abc.com');
-          expect(user.passwd).to.equal(undefined);
-          expect(user.hash).to.not.equal(undefined);
-          expect(user.salt).to.not.equal(undefined);
+          expect(user.passwd).to.not.equal('1234');
+          checkUserAttr(user);
 
           Users.newUser(testUser).then(done).catch((err) => {
             const message = err.message.includes('E11000');
@@ -57,6 +57,15 @@ describe('r2system', () => {
         })
         .catch(done);
     });
+
+    it('should create user with username', () => (
+      Users.newUser({ email: 'test4@abc.com', passwd: '1234', uname: 'test4' }).then((user) => {
+        expect(user.email).to.equal('test4@abc.com');
+        expect(user.passwd).to.not.equal('1234');
+        expect(user.uname).to.equal('test4');
+        checkUserAttr(user);
+      })
+    ));
   });
 
   describe('validate', () => {

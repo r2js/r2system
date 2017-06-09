@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const uuid = require('uuid');
 const log = require('debug')('r2:system:users');
 
-module.exports = (app) => {
+module.exports = (app, Validate) => {
   const mongoose = app.service('Mongoose');
   if (!mongoose) {
     return log('service [Mongoose] not found!');
@@ -14,7 +14,6 @@ module.exports = (app) => {
     passwd: { type: String },
     uname: { type: String },
     salt: { type: String },
-    hash: { type: String },
     lastLogin: { type: Date },
     passwdChanged: { type: Date },
     verifyToken: { type: String },
@@ -37,15 +36,34 @@ module.exports = (app) => {
   schema.pre('save', function preSave(next) {
     this.email = this.email.toLowerCase();
 
-    if (this.passwd) {
+    if (this.isModified('passwd')) {
       this.salt = uuid.v1();
-      this.hash = crypto.createHmac('sha256', this.salt).update(this.passwd).digest('hex');
-      this.passwd = undefined;
+      this.passwd = crypto.createHmac('sha256', this.salt).update(this.passwd).digest('hex');
+    }
+
+    if ((this.isModified('isVerified') || this.$isDefault('isVerified')) && this.isVerified === false) {
+      this.verifyToken = app.utils.random(32);
     }
 
     this._isNew = this.isNew; // eslint-disable-line
     next();
   });
+
+  const attributes = {
+    en: {
+      email: 'Email',
+      passwd: 'Password',
+      uname: 'Username',
+    },
+  };
+
+  const rules = {
+    email: 'required|email',
+    passwd: 'required|min:4',
+  };
+
+  schema.r2options = { attributes, rules };
+  Validate(schema, { attributes, rules });
 
   return mongoose.model('user', schema);
 };
