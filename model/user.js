@@ -1,13 +1,14 @@
 const crypto = require('crypto');
 const uuid = require('uuid');
-const log = require('debug')('r2:system:users');
+const log = require('debug')('r2:system:user');
 
-module.exports = (app, Validate) => {
+module.exports = (app, Validate, conf) => {
   const mongoose = app.service('Mongoose');
   if (!mongoose) {
     return log('service [Mongoose] not found!');
   }
 
+  const getConf = Object.assign(app.config('users') || {}, conf);
   const { Schema } = mongoose;
   const schema = Schema({
     email: { type: String, required: true, unique: true },
@@ -28,11 +29,6 @@ module.exports = (app, Validate) => {
 
   schema.index({ uname: 1 }, { unique: true, sparse: true });
 
-  schema.statics.newUser = function (data) { // eslint-disable-line
-    const User = new this(data);
-    return User.save();
-  };
-
   schema.pre('save', function preSave(next) {
     this.email = this.email.toLowerCase();
 
@@ -49,18 +45,20 @@ module.exports = (app, Validate) => {
     next();
   });
 
-  const attributes = {
+  let { attributes = {}, rules = {} } = getConf;
+
+  attributes = Object.assign({
     en: {
       email: 'Email',
       passwd: 'Password',
       uname: 'Username',
     },
-  };
+  }, attributes);
 
-  const rules = {
+  rules = Object.assign({
     email: 'required|email',
     passwd: 'required|min:4',
-  };
+  }, rules);
 
   schema.r2options = { attributes, rules };
   Validate(schema, { attributes, rules });

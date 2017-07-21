@@ -6,10 +6,14 @@ const r2system = require('../index');
 const expect = chai.expect;
 process.chdir(__dirname);
 
-const app = r2base({ baseDir: __dirname });
+const app = r2base();
 app.start()
-  .serve(r2mongoose, { database: 'r2test' })
-  .serve(r2system)
+  .serve(r2mongoose, { database: 'r2system' })
+  .serve(r2system, {
+    users: {
+      attributes: { es: { email: 'EMAIL', passwd: 'PASSWORD' } },
+    },
+  })
   .load('model')
   .into(app);
 
@@ -24,18 +28,9 @@ const checkUserAttr = (user) => {
 
 describe('r2system', () => {
   describe('users', () => {
-    it('should create user', () => {
-      const User = new Users({ email: 'test1@abc.com', passwd: '1234' });
-      return User.save().then((user) => {
+    it('should create user', () => (
+      Users.create({ email: 'test1@abc.com', passwd: '1234' }).then((user) => {
         expect(user.email).to.equal('test1@abc.com');
-        expect(user.passwd).to.not.equal('1234');
-        checkUserAttr(user);
-      });
-    });
-
-    it('should create user with newUser function', () => (
-      Users.newUser({ email: 'test2@abc.com', passwd: '1234' }).then((user) => {
-        expect(user.email).to.equal('test2@abc.com');
         expect(user.passwd).to.not.equal('1234');
         checkUserAttr(user);
       })
@@ -43,13 +38,13 @@ describe('r2system', () => {
 
     it('should not create user with same email', (done) => {
       const testUser = { email: 'test3@abc.com', passwd: '1234' };
-      Users.newUser(testUser)
+      Users.create(testUser)
         .then((user) => {
           expect(user.email).to.equal('test3@abc.com');
           expect(user.passwd).to.not.equal('1234');
           checkUserAttr(user);
 
-          Users.newUser(testUser).then(done).catch((err) => {
+          Users.create(testUser).then(done).catch((err) => {
             const message = err.message.includes('E11000');
             expect(message).to.equal(true);
             done();
@@ -59,25 +54,21 @@ describe('r2system', () => {
     });
 
     it('should create user with username', () => (
-      Users.newUser({ email: 'test4@abc.com', passwd: '1234', uname: 'test4' }).then((user) => {
+      Users.create({ email: 'test4@abc.com', passwd: '1234', uname: 'test4' }).then((user) => {
         expect(user.email).to.equal('test4@abc.com');
         expect(user.passwd).to.not.equal('1234');
         expect(user.uname).to.equal('test4');
         checkUserAttr(user);
       })
     ));
-  });
 
-  describe('validate', () => {
-    it('should validate schema', (done) => {
-      const test = new Test({ name: '', email: 'test', slug: '!123*=' });
-      test.save()
+    it('should validate user data', (done) => {
+      Users.create({})
         .then(done)
         .catch((err) => {
           try {
-            expect(err.errors.name.message).to.equal('The name field is required.');
-            expect(err.errors.email.message).to.equal('The email format is invalid.');
-            expect(err.errors.slug.message).to.equal('The slug field may only contain alpha-numeric characters, as well as dashes and underscores.');
+            expect(err.errors.email.message).to.equal('The Email field is required.');
+            expect(err.errors.passwd.message).to.equal('The Password field is required.');
             done();
           } catch (e) {
             done(e);
@@ -85,9 +76,25 @@ describe('r2system', () => {
         });
     });
 
-    it('should validate schema, en', (done) => {
-      const test = new Test({ name: '', email: 'test', slug: '!123*=', i18n: 'en' });
-      test.save()
+    it('should validate user data via new attributes and rules', (done) => {
+      Users.create({ uname: 'xyz', i18n: 'es' })
+        .then(done)
+        .catch((err) => {
+          try {
+            expect(err.errors.email.message).to.equal('El campo EMAIL es obligatorio.');
+            expect(err.errors.passwd.message).to.equal('El campo PASSWORD es obligatorio.');
+            expect(err.errors.uname.message).to.equal('El campo uname debe contener al menos 5 caracteres.');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+    });
+  });
+
+  describe('validate', () => {
+    it('should validate schema, default lang=en', (done) => {
+      Test.create({ name: '', email: 'test', slug: '!123*=' })
         .then(done)
         .catch((err) => {
           try {
@@ -101,9 +108,23 @@ describe('r2system', () => {
         });
     });
 
-    it('should validate schema, tr', (done) => {
-      const test = new Test({ name: '', email: 'test', slug: '!123*=', i18n: 'tr' });
-      test.save()
+    it('should validate schema, lang=es', (done) => {
+      Test.create({ name: '', email: 'test', slug: '!123*=', i18n: 'es' })
+        .then(done)
+        .catch((err) => {
+          try {
+            expect(err.errors.name.message).to.equal('El campo name es obligatorio.');
+            expect(err.errors.email.message).to.equal('El campo email no es un correo válido');
+            expect(err.errors.slug.message).to.equal('El campo slug solo debe contener letras, números y guiones.');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+    });
+
+    it('should validate schema, lang=tr', (done) => {
+      Test.create({ name: '', email: 'test', slug: '!123*=', i18n: 'tr' })
         .then(done)
         .catch((err) => {
           try {
