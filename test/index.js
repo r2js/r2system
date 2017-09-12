@@ -114,7 +114,7 @@ describe('r2system', () => {
         .catch((err) => {
           try {
             expect(err.errors.name.message).to.equal('El campo name es obligatorio.');
-            expect(err.errors.email.message).to.equal('El campo email no es un correo válido');
+            expect(err.errors.email.message).to.equal('El campo email no es un correo válido.');
             expect(err.errors.slug.message).to.equal('El campo slug solo debe contener letras, números y guiones.');
             done();
           } catch (e) {
