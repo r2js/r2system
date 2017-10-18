@@ -12,7 +12,7 @@ module.exports = (app, Validate, conf) => {
   const { Schema } = mongoose;
   const schema = Schema({
     email: { type: String, required: true, unique: true },
-    passwd: { type: String },
+    passwd: { type: String, field: 'password' },
     uname: { type: String },
     salt: { type: String },
     lastLogin: { type: Date },
